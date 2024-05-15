@@ -1,0 +1,28 @@
+#!/bin/bash
+
+echo -ne "\nEnter you token: "
+read -s TOKEN
+
+# Droplet ID
+
+droplet_name="NFS-Client"
+droplet_id=$(curl -s -X GET "https://api.digitalocean.com/v2/droplets?name=$droplet_name" \
+     -H "Authorization: Bearer $TOKEN" | jq .droplets[0].id)
+	 
+# Take Snapshot
+
+snapshot=$(curl -s -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"type":"snapshot"}' \
+  "https://api.digitalocean.com/v2/droplets/$droplet_id/actions" | jq '.action | {id, status, type, started_at}')
+
+id=$(echo "$snapshot" | jq .id)
+status=$(echo "$snapshot" | jq .status)
+started_at=$(echo "$snapshot" | jq .started_at)
+
+echo -e "\nTaking Snapshot: \n"
+echo "ID = $id"
+echo "Status = $status"
+echo "Created At = $started_at"
+echo ""

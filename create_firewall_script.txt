@@ -1,0 +1,59 @@
+4import requests
+import json
+
+# Define your DigitalOcean API token
+api_token = '$token'
+
+# Define the parameters for your firewall
+firewall_name = 'example-firewall'
+inbound_rules = [
+    {
+        "protocol": "tcp",
+        "ports": "22",
+        "sources": {
+            "addresses": ["0.0.0.0/0", "::/0"]
+        }
+    },
+    {
+        "protocol": "tcp",
+        "ports": "80",
+        "sources": {
+            "addresses": ["0.0.0.0/0", "::/0"]
+        }
+    },
+    # Add more inbound rules as needed
+]
+outbound_rules = [
+    {
+        "protocol": "tcp",
+        "ports": "all",
+        "destinations": {
+            "addresses": ["0.0.0.0/0", "::/0"]
+        }
+    }
+    # Add more outbound rules as needed
+]
+
+# Define the request headers
+headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {api_token}'
+}
+
+# Define the request payload
+data = {
+    'name': firewall_name,
+    'inbound_rules': inbound_rules,
+    'outbound_rules': outbound_rules
+}
+
+# Send the request to create the firewall
+response = requests.post('https://api.digitalocean.com/v2/firewalls', headers=headers, data=json.dumps(data))
+
+# Check if the request was successful
+if response.status_code == 201:
+    print('Firewall created successfully!')
+    print(json.dumps(response.json(), indent=4))
+else:
+    print('Failed to create firewall:')
+    print(response.text)

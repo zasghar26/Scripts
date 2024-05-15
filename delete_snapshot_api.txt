@@ -1,0 +1,81 @@
+#!/bin/bash
+
+echo -ne "\nEnter you token: "
+read -s TOKEN
+
+# Droplet ID
+
+droplet_name="NFS-Client"
+droplet_id=$(curl -s -X GET "https://api.digitalocean.com/v2/droplets?name=$droplet_name" \
+     -H "Authorization: Bearer $TOKEN" | jq .droplets[0].id)
+
+# Available Snapshots
+
+echo -e "\nAvailable snapshots for droplet: ${droplet_name}\n"
+
+snapshots=$(curl -s -X GET \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  "https://api.digitalocean.com/v2/droplets/$droplet_id/snapshots" | jq '.snapshots | sort_by(.created_at) | reverse')
+
+snapshot_info=$(echo "$snapshots" | jq -r '.[] | "\(.id),\(.name),\(.created_at)"')
+
+echo "-------------------------------------------------------------------------"
+echo "ID             | Name                           | Created At"
+echo "-------------------------------------------------------------------------"
+echo "$snapshot_info" | while IFS=, read -r id name created_at; do
+    printf "%-14s | %-30s | %s\n" "$id" "$name" "$created_at"
+done
+echo "-------------------------------------------------------------------------"
+
+# Snapshots to delete
+
+echo -ne "\nHow many snapshots would you like to retain: "
+read retain
+
+if [ $retain -eq 0 ];then
+	echo -e "\nYou must reatin atleast 1 snapshot.\n"
+	exit 0
+fi  
+
+echo -e "\nFollowing snapshots will be deleted:\n"
+
+snapshots=$(curl -s -X GET \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  "https://api.digitalocean.com/v2/droplets/$droplet_id/snapshots" | jq '.snapshots | sort_by(.created_at) | reverse')
+  
+snapshot_info=$(echo "$snapshots" | jq -r ".[$retain:][] | \"\(.id),\(.name),\(.created_at)\"")
+
+echo "-------------------------------------------------------------------------"
+echo "ID             | Name                           | Created At"
+echo "-------------------------------------------------------------------------"
+echo "$snapshot_info" | while IFS=, read -r id name created_at; do
+    printf "%-14s | %-30s | %s\n" "$id" "$name" "$created_at"
+done
+echo "-------------------------------------------------------------------------"
+
+delete_ids=$(curl -s -X GET \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  "https://api.digitalocean.com/v2/droplets/$droplet_id/snapshots" | jq ".snapshots | sort_by(.created_at) | reverse | .[$retain:][] | .id")
+  
+echo -ne "\nAre you sure want to delete? (y/n): "
+read choice
+
+if [ "$choice" = "y" ]; then
+	for id in `echo -e ${delete_ids}`;
+	do
+		curl -s -X DELETE \
+		  -H 'Content-Type: application/json' \
+		  -H "Authorization: Bearer $TOKEN" \
+		  "https://api.digitalocean.com/v2/snapshots/$id"
+	done
+	echo -e "\nSnapshots have been deleted ...\n"
+elif [ "$choice" = "n" ]; then
+	echo "Exiting ..."
+	exit 0
+else
+	echo "Invalid Input, exiting ..."
+	exit 0
+fi
