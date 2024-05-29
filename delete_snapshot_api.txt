@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -ne "\nEnter you token: "
+echo -ne "\nEnter your token: "
 read -s TOKEN
 
 # Droplet ID
