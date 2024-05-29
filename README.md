@@ -52,3 +52,21 @@ This script facilitates the deletion of snapshots through API calls, aiding in t
 Before running the script read the script and change it as per your specific needs then convert the “.txt” files to “.sh” using the below command:
 
         mv <script_name>.txt <script_name>.sh
+
+**Setting Up a Cron Job for Daily Snapshots**
+
+To set up a cron job that runs the create_snapshot_api.sh script daily, follow these steps:
+
+Open the crontab file:
+
+        crontab -e
+
+Add the following line to schedule the snapshot script to run daily at a specific time (e.g., 2 AM):
+
+    0 2 * * * /path/to/create_snapshot_api.sh
+
+Replace /path/to/create_snapshot_api.sh with the actual path to your script.
+
+Save and close the crontab file.
+
+The script will now run daily at the specified time.
