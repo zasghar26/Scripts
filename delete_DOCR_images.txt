@@ -1,4 +1,4 @@
-------- Token -------
+------- Enter your Token here -------
 
 DIGITALOCEAN_TOKEN=$token
 
