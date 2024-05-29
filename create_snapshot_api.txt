@@ -5,7 +5,7 @@ read -s TOKEN
 
 # Droplet ID
 
-droplet_name="NFS-Client"
+droplet_name="<Enter_your_droplet_name>"
 droplet_id=$(curl -s -X GET "https://api.digitalocean.com/v2/droplets?name=$droplet_name" \
      -H "Authorization: Bearer $TOKEN" | jq .droplets[0].id)
 	 
