@@ -70,3 +70,4 @@ Replace /path/to/create_snapshot_api.sh with the actual path to your script.
 Save and close the crontab file.
 
 The script will now run daily at the specified time.
+Finish
